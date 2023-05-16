@@ -4,6 +4,8 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
+import androidx.annotation.NonNull;
+
 import com.daasuu.epf.chooser.EConfigChooser;
 import com.daasuu.epf.contextfactory.EContextFactory;
 import com.daasuu.epf.filter.GlFilter;
@@ -39,15 +41,22 @@ public class EPlayerView extends GLSurfaceView implements Player.Listener {
 
     }
 
-    public EPlayerView setSimpleExoPlayer(ExoPlayer player) {
+    public EPlayerView setExoPlayer(@NonNull ExoPlayer player) {
         if (this.player != null) {
             this.player.release();
-            this.player = null;
         }
         this.player = player;
         this.player.addListener(this);
         this.renderer.setSimpleExoPlayer(player);
         return this;
+    }
+
+    /**
+     * @deprecated Use setExoPlayer(ExoPlayer player) instead.
+     */
+    @Deprecated
+    public EPlayerView setSimpleExoPlayer(@NonNull ExoPlayer player) {
+        return setExoPlayer(player);
     }
 
     public void setGlFilter(GlFilter glFilter) {

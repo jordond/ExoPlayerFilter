@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUoGlPlayerView() {
         ePlayerView = new EPlayerView(this);
-        ePlayerView.setSimpleExoPlayer(player);
+        ePlayerView.setExoPlayer(player);
         ePlayerView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         ((MovieWrapperView) findViewById(R.id.layout_movie_wrapper)).addView(ePlayerView);
         ePlayerView.onResume();
