@@ -9,9 +9,9 @@ import androidx.annotation.NonNull;
 import com.daasuu.epf.chooser.EConfigChooser;
 import com.daasuu.epf.contextfactory.EContextFactory;
 import com.daasuu.epf.filter.GlFilter;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.video.VideoSize;
+import androidx.media3.common.Player;
+import androidx.media3.common.VideoSize;
+import androidx.media3.exoplayer.ExoPlayer;
 
 /**
  * Created by sudamasayuki on 2017/05/16.
@@ -47,7 +47,7 @@ public class EPlayerView extends GLSurfaceView implements Player.Listener {
         }
         this.player = player;
         this.player.addListener(this);
-        this.renderer.setSimpleExoPlayer(player);
+        this.renderer.setExoPlayer(player);
         return this;
     }
 

@@ -12,16 +12,16 @@ import android.widget.SeekBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.daasuu.epf.EPlayerView;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.source.ProgressiveMediaSource;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.util.UnstableApi;
+import androidx.media3.datasource.DataSource;
+import androidx.media3.datasource.DefaultDataSource;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.ProgressiveMediaSource;
 
 import java.util.List;
 
-
+@UnstableApi
 public class MainActivity extends AppCompatActivity {
 
     private EPlayerView ePlayerView;
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setUpSimpleExoPlayer();
+        setUpExoPlayer();
         setUoGlPlayerView();
         setUpTimer();
     }
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                player.seekTo(progress * 1000);
+                player.seekTo(progress * 1000L);
             }
 
             @Override
@@ -115,13 +115,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void setUpSimpleExoPlayer() {
-
-
+    private void setUpExoPlayer() {
         // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "yourApplicationName"));
+        DataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this);
 
-        // SimpleExoPlayer
+        // ExoPlayer
         player = new ExoPlayer.Builder(this)
                 .setMediaSourceFactory(new ProgressiveMediaSource.Factory(dataSourceFactory))
                 .build();
