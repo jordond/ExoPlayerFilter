@@ -32,7 +32,7 @@ android {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
-    api("androidx.media3:media3-exoplayer:1.0.1")
+    api("androidx.media3:media3-exoplayer:1.0.2")
 }
 
 publishing {
