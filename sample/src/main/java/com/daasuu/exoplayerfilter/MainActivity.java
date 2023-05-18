@@ -8,15 +8,15 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.daasuu.epf.EPlayerView;
 import com.daasuu.epf.filter.GlFilter;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.source.ProgressiveMediaSource;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSource;
 
 import java.util.List;
 
@@ -28,19 +28,28 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar seekBar;
     private PlayerTimer playerTimer;
 
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+        registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri != null) {
+                MediaItem item = MediaItem.fromUri(uri);
+                setMediaItem(item);
+            }
+        });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setUpViews();
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         setUpSimpleExoPlayer();
+        if (player.getMediaItemCount() == 0) {
+            setMediaItem();
+        }
         setUoGlPlayerView();
         setUpTimer();
     }
@@ -58,19 +67,25 @@ public class MainActivity extends AppCompatActivity {
     private void setUpViews() {
         // play pause
         button = (Button) findViewById(R.id.btn);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (player == null) return;
+        button.setOnClickListener(v -> {
+            if (player == null) return;
 
-                if (button.getText().toString().equals(MainActivity.this.getString(R.string.pause))) {
-                    player.setPlayWhenReady(false);
-                    button.setText(R.string.play);
-                } else {
-                    player.setPlayWhenReady(true);
-                    button.setText(R.string.pause);
-                }
+            if (button.getText().toString().equals(MainActivity.this.getString(R.string.pause))) {
+                player.setPlayWhenReady(false);
+                button.setText(R.string.play);
+            } else {
+                player.setPlayWhenReady(true);
+                button.setText(R.string.pause);
             }
+        });
+
+        Button loadVideoButton = (Button) findViewById(R.id.btn_select_video);
+        loadVideoButton.setOnClickListener(v -> {
+            pickMedia.launch(
+                new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.VideoOnly.INSTANCE)
+                    .build()
+            );
         });
 
         // seek
@@ -112,20 +127,26 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setUpSimpleExoPlayer() {
-
-
-        // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this);
+        if (player != null) return;
 
         // SimpleExoPlayer
-        player = new ExoPlayer.Builder(this)
-                .setMediaSourceFactory(new ProgressiveMediaSource.Factory(dataSourceFactory))
-                .build();
-        player.addMediaItem(MediaItem.fromUri(Constant.STREAM_URL_MP4_VOD_SHORT));
-        player.prepare();
-        player.setPlayWhenReady(true);
+        player = new ExoPlayer.Builder(this).build();
     }
 
+    private void setMediaItem(MediaItem mediaItem) {
+        if (player == null) {
+            setUpSimpleExoPlayer();
+        }
+
+        player.clearMediaItems();
+        player.addMediaItem(mediaItem);
+        player.prepare();
+        player.play();
+    }
+
+    private void setMediaItem() {
+        setMediaItem(MediaItem.fromUri(Constant.STREAM_URL_MP4_VOD_SHORT));
+    }
 
     private void setUoGlPlayerView() {
         ePlayerView = new EPlayerView(this);
@@ -138,17 +159,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpTimer() {
         playerTimer = new PlayerTimer();
-        playerTimer.setCallback(new PlayerTimer.Callback() {
-            @Override
-            public void onTick(long timeMillis) {
-                long position = player.getCurrentPosition();
-                long duration = player.getDuration();
+        playerTimer.setCallback(timeMillis -> {
+            long position = player.getCurrentPosition();
+            long duration = player.getDuration();
 
-                if (duration <= 0) return;
+            if (duration <= 0) return;
 
-                seekBar.setMax((int) duration / 1000);
-                seekBar.setProgress((int) position / 1000);
-            }
+            seekBar.setMax((int) duration / 1000);
+            seekBar.setProgress((int) position / 1000);
         });
         playerTimer.start();
     }
@@ -162,6 +180,4 @@ public class MainActivity extends AppCompatActivity {
         player.release();
         player = null;
     }
-
-
 }
