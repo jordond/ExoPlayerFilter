@@ -3,7 +3,6 @@ package com.daasuu.exoplayerfilter;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -12,16 +11,15 @@ import android.widget.SeekBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.daasuu.epf.EPlayerView;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.datasource.DataSource;
-import androidx.media3.datasource.DefaultDataSource;
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.exoplayer.source.ProgressiveMediaSource;
+import com.daasuu.epf.filter.GlFilter;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
 
 import java.util.List;
 
-@UnstableApi
 public class MainActivity extends AppCompatActivity {
 
     private EPlayerView ePlayerView;
@@ -42,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setUpExoPlayer();
+        setUpSimpleExoPlayer();
         setUoGlPlayerView();
         setUpTimer();
     }
@@ -106,20 +104,20 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.list);
         final List<FilterType> filterTypes = FilterType.createFilterList();
         listView.setAdapter(new FilterAdapter(this, R.layout.row_text, filterTypes));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ePlayerView.setGlFilter(FilterType.createGlFilter(filterTypes.get(position), getApplicationContext()));
-            }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            GlFilter filter = FilterType.createGlFilter(filterTypes.get(position), getApplicationContext());
+            ePlayerView.setGlFilter(filter);
         });
     }
 
 
-    private void setUpExoPlayer() {
+    private void setUpSimpleExoPlayer() {
+
+
         // Produces DataSource instances through which media data is loaded.
         DataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this);
 
-        // ExoPlayer
+        // SimpleExoPlayer
         player = new ExoPlayer.Builder(this)
                 .setMediaSourceFactory(new ProgressiveMediaSource.Factory(dataSourceFactory))
                 .build();

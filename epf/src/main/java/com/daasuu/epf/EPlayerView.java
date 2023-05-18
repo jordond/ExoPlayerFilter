@@ -10,9 +10,9 @@ import androidx.annotation.NonNull;
 import com.daasuu.epf.chooser.EConfigChooser;
 import com.daasuu.epf.contextfactory.EContextFactory;
 import com.daasuu.epf.filter.GlFilter;
-import androidx.media3.common.Player;
-import androidx.media3.common.VideoSize;
-import androidx.media3.exoplayer.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.video.VideoSize;
 
 import static com.daasuu.epf.chooser.EConfigChooser.EGL_CONTEXT_CLIENT_VERSION;
 
