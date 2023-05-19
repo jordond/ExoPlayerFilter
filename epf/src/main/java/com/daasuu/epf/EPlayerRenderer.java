@@ -22,6 +22,8 @@ import static android.opengl.GLES20.GL_NEAREST;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.glViewport;
 
+import androidx.annotation.NonNull;
+
 /**
  * Created by sudamasayuki on 2017/05/16.
  */
@@ -52,6 +54,8 @@ class EPlayerRenderer extends EFrameBufferObjectRenderer implements SurfaceTextu
     private float aspectRatio = 1f;
 
     private ExoPlayer simpleExoPlayer;
+
+    private int rotation = 0;
 
     EPlayerRenderer(EPlayerView glPreview) {
         super();
@@ -148,6 +152,22 @@ class EPlayerRenderer extends EFrameBufferObjectRenderer implements SurfaceTextu
                 previewTexture.getTransformMatrix(STMatrix);
                 updateSurface = false;
             }
+
+            switch (rotation) {
+                case 90 -> {
+                    Matrix.rotateM(STMatrix, 0, 90f, 0f, 0f, 1f);
+                    Matrix.translateM(STMatrix, 0, 0f, -1f, 0f);
+                }
+                case 180 -> {
+                    Matrix.rotateM(STMatrix, 0, 180f, 0f, 0f, 1f);
+                    Matrix.translateM(STMatrix, 0, -1f, -1f, 0f);
+                }
+                case 270 -> {
+                    Matrix.rotateM(STMatrix, 0, 270f, 0f, 0f, 1f);
+                    Matrix.translateM(STMatrix, 0, -1f, 0f, 0f);
+                }
+                default -> Log.e(TAG, "onDrawFrame: Unsupported rotation = " + rotation);
+            }
         }
 
         if (isNewFilter) {
@@ -185,6 +205,12 @@ class EPlayerRenderer extends EFrameBufferObjectRenderer implements SurfaceTextu
 
     void setExoPlayer(ExoPlayer exoPlayer) {
         this.simpleExoPlayer = exoPlayer;
+    }
+
+    void setRotation(int rotation) {
+        this.rotation = rotation;
+        updateSurface = true;
+        glPreview.requestRender();
     }
 
     void release() {

@@ -85,6 +85,10 @@ public class EPlayerView extends GLSurfaceView implements Player.Listener {
         requestLayout();
     }
 
+    public void setRotation(@NonNull int rotation) {
+        this.renderer.setRotation(rotation);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);

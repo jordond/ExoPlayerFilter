@@ -1,13 +1,15 @@
 package com.daasuu.exoplayerfilter;
 
 import android.os.Bundle;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.daasuu.epf.EPlayerView;
@@ -19,6 +21,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
 
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,11 +30,21 @@ public class MainActivity extends AppCompatActivity {
     private Button button;
     private SeekBar seekBar;
     private PlayerTimer playerTimer;
+    private Button rotateButton;
 
+    private int rotate = 0;
+
+    ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+        registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            // Callback is invoked after the user selects a media item or closes the
+            // photo picker.
+            if (uri != null) {
+
+            }
+        });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setUpViews();
 
@@ -58,19 +71,37 @@ public class MainActivity extends AppCompatActivity {
     private void setUpViews() {
         // play pause
         button = (Button) findViewById(R.id.btn);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (player == null) return;
+        button.setOnClickListener(v -> {
+            if (player == null) return;
 
-                if (button.getText().toString().equals(MainActivity.this.getString(R.string.pause))) {
-                    player.setPlayWhenReady(false);
-                    button.setText(R.string.play);
-                } else {
-                    player.setPlayWhenReady(true);
-                    button.setText(R.string.pause);
-                }
+            if (button.getText().toString().equals(MainActivity.this.getString(R.string.pause))) {
+                player.setPlayWhenReady(false);
+                button.setText(R.string.play);
+            } else {
+                player.setPlayWhenReady(true);
+                button.setText(R.string.pause);
             }
+        });
+
+        Button loadVideoButton = (Button) findViewById(R.id.btn_select_video);
+        loadVideoButton.setOnClickListener(v -> {
+            pickMedia.launch(
+                new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.VideoOnly.INSTANCE)
+                    .build()
+            );
+        });
+
+        // rotate
+        rotateButton = (Button) findViewById(R.id.btn_rotate);
+        rotateButton.setText("Rotated 0°");
+        rotateButton.setOnClickListener(v -> {
+            this.rotate += 90;
+            if (this.rotate >= 360) {
+                this.rotate = 0;
+            }
+            rotateButton.setText(String.format(Locale.getDefault(), "Rotated %d°", this.rotate));
+            this.ePlayerView.setRotation(this.rotate);
         });
 
         // seek
@@ -110,10 +141,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     private void setUpSimpleExoPlayer() {
-
-
         // Produces DataSource instances through which media data is loaded.
         DataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this);
 
@@ -126,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         player.setPlayWhenReady(true);
     }
 
-
     private void setUoGlPlayerView() {
         ePlayerView = new EPlayerView(this);
         ePlayerView.setExoPlayer(player);
@@ -135,24 +162,19 @@ public class MainActivity extends AppCompatActivity {
         ePlayerView.onResume();
     }
 
-
     private void setUpTimer() {
         playerTimer = new PlayerTimer();
-        playerTimer.setCallback(new PlayerTimer.Callback() {
-            @Override
-            public void onTick(long timeMillis) {
-                long position = player.getCurrentPosition();
-                long duration = player.getDuration();
+        playerTimer.setCallback(timeMillis -> {
+            long position = player.getCurrentPosition();
+            long duration = player.getDuration();
 
-                if (duration <= 0) return;
+            if (duration <= 0) return;
 
-                seekBar.setMax((int) duration / 1000);
-                seekBar.setProgress((int) position / 1000);
-            }
+            seekBar.setMax((int) duration / 1000);
+            seekBar.setProgress((int) position / 1000);
         });
         playerTimer.start();
     }
-
 
     private void releasePlayer() {
         ePlayerView.onPause();
@@ -162,6 +184,4 @@ public class MainActivity extends AppCompatActivity {
         player.release();
         player = null;
     }
-
-
 }
