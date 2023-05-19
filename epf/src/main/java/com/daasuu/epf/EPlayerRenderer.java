@@ -154,6 +154,10 @@ class EPlayerRenderer extends EFrameBufferObjectRenderer implements SurfaceTextu
             }
 
             switch (rotation) {
+                case 0 -> {
+                    Matrix.rotateM(STMatrix, 0, 0f, 0f, 0f, 1f);
+                    Matrix.translateM(STMatrix, 0, 0f, 0f, 0f);
+                }
                 case 90 -> {
                     Matrix.rotateM(STMatrix, 0, 90f, 0f, 0f, 1f);
                     Matrix.translateM(STMatrix, 0, 0f, -1f, 0f);

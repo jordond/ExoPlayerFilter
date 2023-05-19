@@ -16,9 +16,6 @@ import com.daasuu.epf.EPlayerView;
 import com.daasuu.epf.filter.GlFilter;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.source.ProgressiveMediaSource;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSource;
 
 import java.util.List;
 import java.util.Locale;
@@ -34,26 +31,28 @@ public class MainActivity extends AppCompatActivity {
 
     private int rotate = 0;
 
-    ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
         registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
-            // Callback is invoked after the user selects a media item or closes the
-            // photo picker.
             if (uri != null) {
-
+                MediaItem item = MediaItem.fromUri(uri);
+                setMediaItem(item);
             }
         });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setUpViews();
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         setUpSimpleExoPlayer();
+        if (player.getMediaItemCount() == 0) {
+            setMediaItem();
+        }
         setUoGlPlayerView();
         setUpTimer();
     }
@@ -142,16 +141,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpSimpleExoPlayer() {
-        // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this);
+        if (player != null) return;
 
         // SimpleExoPlayer
-        player = new ExoPlayer.Builder(this)
-                .setMediaSourceFactory(new ProgressiveMediaSource.Factory(dataSourceFactory))
-                .build();
-        player.addMediaItem(MediaItem.fromUri(Constant.STREAM_URL_MP4_VOD_SHORT));
+        player = new ExoPlayer.Builder(this).build();
+    }
+
+    private void setMediaItem(MediaItem mediaItem) {
+        if (player == null) {
+            setUpSimpleExoPlayer();
+        }
+
+        player.clearMediaItems();
+        player.addMediaItem(mediaItem);
         player.prepare();
-        player.setPlayWhenReady(true);
+        player.play();
+    }
+
+    private void setMediaItem() {
+        setMediaItem(MediaItem.fromUri(Constant.STREAM_URL_MP4_VOD_SHORT));
     }
 
     private void setUoGlPlayerView() {
